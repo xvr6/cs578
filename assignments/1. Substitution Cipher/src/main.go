@@ -46,7 +46,6 @@ var standardFreq = []rune{'e', 't', 'a', 's', 'i', 'r', 'n', 'o', 'c', 'h', 'l',
 
 func main() {
 	charMap := map[rune]int{}
-	otherMap := map[rune][]int{}
 	file, err := os.Open("./ciphertext.txt")
 	if err != nil {
 		panic(err) //crash
@@ -67,14 +66,12 @@ func main() {
 	file.Close()
 	fmt.Println(dat)
 
-	for pos, c := range dat {
+	for _, c := range dat {
 		if 'a' <= c && c <= 'z' {
 			charMap[rune(c)]++
 		} else if 'A' <= c && c <= 'Z' {
 			lower := c + ('a' - 'A') //convert to ascii value of lower case letter
 			charMap[rune(lower)]++
-		} else {
-			otherMap[rune(c)] = append(otherMap[rune(c)], pos)
 		}
 
 	}
