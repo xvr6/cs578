@@ -20,24 +20,25 @@ import (
 // 	some letters must have the same frequency.
 // 	This was fixed by changing function used in sort.go to account for ties
 //  sort the ties value-ascending.
-//after noticing this, i restarted from the base string:
-//'e','t','a','o','i','n','s','h','r','d','l','c','u','m','w','f','g','y','p','b','v','k','j','x','q','z'
-// perhaps it could be a fun exersize to expand this app into something more fucntional for a CLI tool as a personal project
+// After noticing this, I restarted from the base string:
+// 'e','t','a','o','i','n','s','h','r','d','l','c','u','m','w','f','g','y','p','b','v','k','j','x','q','z'
+// perhaps it could be a fun exercise to expand this app into something more functional for a CLI tool as a personal project
 
 var standardFreq = []rune{'e', 't', 'a', 's', 'i', 'r', 'n', 'o', 'c', 'h', 'l', 'd', 'u', 'f', 'p', 'y', 'm', 'w', 'b', 'g', 'k', 'v', 'j', 'x', 'q', 'z'}
 
 /* conversions made for this ciphertext
-etr.     		-> etc.      	  | swap r/c
-Mus Mact 		-> Fun Fact  	  | swap m/f, s/n
-Pecauos  		-> Because  	  | swap p/b, o/s
-belieke  		-> believe		  | swap k/v
-instear  		-> instead  	  | swap r/d
-tre 	 		-> the			  | swap r/h
-Yhm		 		-> why			  | swap y/w, m/y
-caooy	 		-> carry		  | swap o/r
-crymtopramhers 	-> cryptomraphers | swap m/p
-cryptomraphers  -> cryptographers | swap m/g
-*/
+* etr.     		 -> etc.       	   | swap r/c
+* Mus Mact 		 -> Fun Fact   	   | swap m/f, s/n
+* Pecauos  		 -> Because   	   | swap p/b, o/s
+* belieke  		 -> believe	 	   | swap k/v
+* instear  		 -> instead  	   | swap r/d
+* tre 	 		 -> the			   | swap r/h
+* Yhm		 	 -> why			   | swap y/w, m/y
+* caooy	 		 -> carry		   | swap o/r
+* crymtopramhers -> cryptomraphers | swap m/p
+* cryptomraphers -> cryptographers | swap m/g
+ */
+
 // completed deciphering - now i must fix " ’ " being converted into " â "
 // used: https://www.babelstone.co.uk/Unicode/whatisit.html to determine that it is U+2019
 // used: https://www.compart.com/en/unicode/U+2019			to determine that this is '0xE2' in UTF-8 or 226.
@@ -54,7 +55,7 @@ func main() {
 
 	reader := bufio.NewReader(file)
 	var dat []rune = make([]rune, 0, stat.Size())
-	for { //loop unitl no more runes can be found
+	for { //loop until no more runes can be found
 		data, _, err := reader.ReadRune()
 		if err != nil {
 			break // completed
