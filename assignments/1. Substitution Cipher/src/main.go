@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"os"
 )
@@ -39,15 +40,31 @@ cryptomraphers  -> cryptographers | swap m/g
 */
 // completed deciphering - now i must fix " ’ " being converted into " â "
 // used: https://www.babelstone.co.uk/Unicode/whatisit.html to determine that it is U+2019
-// used: https://www.compart.com/en/unicode/U+2019			to determine that this is '0xE2'
+// used: https://www.compart.com/en/unicode/U+2019			to determine that this is '0xE2' in UTF-8 or 226.
+// This was fixed by changing input method from 
 
 func main() {
 	charMap := map[rune]int{}
 	otherMap := map[rune][]int{}
-	dat, err := os.ReadFile("./ciphertext.txt")
+	file, err := os.Open("./ciphertext.txt")
 	if err != nil {
 		panic(err) //crash
 	}
+	stat, _ := file.Stat()
+
+	reader := bufio.NewReader(file)
+	var dat []rune = make([]rune, 0, stat.Size())
+	for {
+		data, _, err := reader.ReadRune()
+		if err != nil {
+			break // completed
+		}
+		dat = append(dat, data)
+
+	}
+
+	file.Close()
+	fmt.Println(dat)
 
 	for pos, c := range dat {
 		if 'a' <= c && c <= 'z' {
@@ -105,7 +122,6 @@ func main() {
 			convToUpper = true
 			toFind = br + ('a' - 'A') //convert to ascii value of lower case letter
 		} else {
-			// pass through as this is a non A-z character
 			converted = append(converted, br)
 			continue
 		}
