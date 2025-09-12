@@ -41,7 +41,7 @@ cryptomraphers  -> cryptographers | swap m/g
 // completed deciphering - now i must fix " ’ " being converted into " â "
 // used: https://www.babelstone.co.uk/Unicode/whatisit.html to determine that it is U+2019
 // used: https://www.compart.com/en/unicode/U+2019			to determine that this is '0xE2' in UTF-8 or 226.
-// This was fixed by changing input method from 
+// This was fixed by changing input method from os.ReadFile to bufio.NewReader(file).ReadRune()
 
 func main() {
 	charMap := map[rune]int{}
@@ -54,7 +54,7 @@ func main() {
 
 	reader := bufio.NewReader(file)
 	var dat []rune = make([]rune, 0, stat.Size())
-	for {
+	for { //loop unitl no more runes can be found
 		data, _, err := reader.ReadRune()
 		if err != nil {
 			break // completed
