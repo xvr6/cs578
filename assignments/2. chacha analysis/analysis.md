@@ -105,12 +105,13 @@ Randomness tests were performed to ensure the keystream output is indistinguisha
 ### Sample Command
 
 ```bash
-./chac -n 0x12345678 input.txt keystream.bin
-dieharder -a -g 202 -f keystream.bin
+**./chac -n 0x12345678 input.txt keystream.bin
+**dieharder -a -g 202 -f keystream.bin
 ```
 
 ### Results
 
+The keystream passed most basic randomness tests, but some tests showed slightly lower entropy and more frequent patterns than expected. This may be due to the reuse of state for multiple output blocks. While not immediately exploitable, it suggests caution for cryptographic use.
 
 ### Python Example: Entropy and Frequency Test
 
