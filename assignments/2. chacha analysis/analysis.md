@@ -71,26 +71,65 @@ Differential cryptanalysis examines how differences in plaintext input affect th
 **Experimental Setup:**
 
 - Generate plaintext pairs with specific bit differences (e.g., flipping one bit).
-
 - Encrypt using the ChaC implementation, keeping key and nonce constant.
-
 - Compare ciphertexts and analyze the distribution of output differences.
 
-**Sample Code Snippet:**
+#### Example Python Code for Differential Cryptanalysis
 
 ```python
-for delta in test_deltas:
-    pt1 = random_plaintext()
-    pt2 = xor_bytes(pt1, delta)
-    ct1 = chac_encrypt(pt1, key, nonce)
-    ct2 = chac_encrypt(pt2, key, nonce)
-    diff = xor_bytes(ct1, ct2)
-    record(diff)
+import os
+import subprocess
+import numpy as np
+
+def xor_bytes(a, b):
+  return bytes(x ^ y for x, y in zip(a, b))
+
+key = b'\x00' * 16  # Example key
+nonce = '0x12345678'
+num_tests = 100
+bit_positions = [0, 1, 2, 3, 4, 5, 6, 7]
+diff_counts = []
+
+for bit in bit_positions:
+  diffs = []
+  for _ in range(num_tests):
+    pt1 = os.urandom(32)
+    pt2 = bytearray(pt1)
+    pt2[0] ^= (1 << bit)  # Flip one bit in first byte
+    with open('pt1.bin', 'wb') as f: f.write(pt1)
+    with open('pt2.bin', 'wb') as f: f.write(pt2)
+    subprocess.run(['./chac', '-n', nonce, 'pt1.bin', 'ct1.bin'])
+    subprocess.run(['./chac', '-n', nonce, 'pt2.bin', 'ct2.bin'])
+    with open('ct1.bin', 'rb') as f: ct1 = f.read()
+    with open('ct2.bin', 'rb') as f: ct2 = f.read()
+    diff = sum(b1 != b2 for b1, b2 in zip(ct1, ct2))
+    diffs.append(diff)
+  diff_counts.append((bit, np.mean(diffs), np.std(diffs)))
+
+for bit, mean, std in diff_counts:
+  print(f'Bit {bit}: Mean diff = {mean:.2f}, Std = {std:.2f}')
 ```
 
-**Results:**
+This code generates random plaintext pairs differing by one bit, encrypts them with ChaC, and computes the average number of differing bytes in the ciphertexts. You can adjust the key, nonce, and number of tests as needed.
 
-Initial experiments show that the reduced state size and output expansion in ChaC may lead to less diffusion compared to ChaCha. Some output blocks exhibited higher-than-expected correlation when the same state was reused for multiple keystreams. No catastrophic bias was found, but the avalanche effect was weaker than in the original ChaCha.
+**Experimental Results:**
+
+The following results were obtained by flipping each bit in the first byte of the plaintext and measuring the average number of differing bytes in the ciphertexts:
+
+```txt
+Bit 0: Mean diff = 1.00, Std = 0.00
+Bit 1: Mean diff = 1.00, Std = 0.00
+Bit 2: Mean diff = 1.00, Std = 0.00
+Bit 3: Mean diff = 1.00, Std = 0.00
+Bit 4: Mean diff = 1.00, Std = 0.00
+Bit 5: Mean diff = 1.00, Std = 0.00
+Bit 6: Mean diff = 1.00, Std = 0.00
+Bit 7: Mean diff = 1.00, Std = 0.00
+```
+
+**Interpretation:**
+
+These results indicate that flipping a single bit in the plaintext only affects a single byte in the ciphertext, with no diffusion to other bytes. This suggests that the modified ChaC cipher has very poor diffusion and avalanche properties compared to the original ChaCha, where a single bit change should affect many output bytes. This is a significant weakness and could make the cipher vulnerable to differential attacks.
 
 ### 4.2 Statistical/Randomness Testing
 
@@ -105,66 +144,61 @@ Randomness tests were performed to ensure the keystream output is indistinguisha
 ### Sample Command
 
 ```bash
-**./chac -n 0x12345678 input.txt keystream.bin
-**dieharder -a -g 202 -f keystream.bin
+./chac -n 0x12345678 input.txt keystream.bin
+dieharder -a -f keystream.bin
 ```
 
 ### Results
 
-The keystream passed most basic randomness tests, but some tests showed slightly lower entropy and more frequent patterns than expected. This may be due to the reuse of state for multiple output blocks. While not immediately exploitable, it suggests caution for cryptographic use.
+**Dieharder Statistical Test Results (Full):**
 
-### Python Example: Entropy and Frequency Test
+The full Dieharder output for the ChaC keystream is attached and summarized below. Most tests were PASSED, indicating good statistical randomness. However, a few tests were marked as WEAK:
 
-```python
-import collections
-import math
+- `rgb_bitdist` (ntup=8, p-value=0.99836114)
+- `rgb_bitdist` (ntup=10, p-value=0.00356960)
+- `dab_filltree2` (ntup=1, p-value=0.99918205)
 
-def calculate_entropy(data):
-    counter = collections.Counter(data)
-    total = len(data)
-    entropy = -sum((count/total) * math.log2(count/total) for count in counter.values())
-    return entropy
+All other tests were PASSED with p-values well within the expected range.
 
-def frequency_test(data):
-    ones = sum(bin(byte).count('1') for byte in data)
-    zeros = len(data) * 8 - ones
-    print(f"Ones: {ones}, Zeros: {zeros}")
+**Interpretation:**
 
-# Example usage:
-with open('keystream.bin', 'rb') as f:
-    keystream = f.read()
-    print(f"Entropy: {calculate_entropy(keystream):.4f} bits/byte")
-    frequency_test(keystream)
-```
+The ChaC keystream passes the majority of Dieharder randomness tests, suggesting it is statistically close to random. The presence of a few WEAK results (very high or very low p-values) may indicate subtle non-randomness or correlations in the output, but these are not catastrophic failures. Combined with the poor diffusion and avalanche properties observed in the differential cryptanalysis, these results reinforce the recommendation to use ChaC with caution in cryptographic applications. For high-security use, further analysis and improvements to diffusion are advised.
 
 ## 5. Critical Discussion
 
 ### Strengths
 
 - ChaC retains the basic structure and round function of ChaCha, which is well-studied and robust against many attacks.
-- The cipher is efficient and produces a large keystream per block, which may be useful for certain applications.
+- The cipher is efficient and produces a large keystream per block, which may be useful for certain applications where performance is prioritized over security.
 
-### Weaknesses
+### Weaknesses and Experimental Findings
 
-- Reduced state size and output expansion may decrease diffusion and introduce correlations between output blocks.
-- The avalanche effect is weaker, and some statistical tests show lower entropy than ChaCha.
-- The simplified key schedule and reuse of state could make the cipher more vulnerable to advanced cryptanalysis.
+- **Poor Diffusion and Avalanche:** Differential cryptanalysis shows that flipping a single bit in the plaintext only affects a single byte in the ciphertext, with no diffusion to other bytes. This is a major weakness compared to the original ChaCha, where a single bit change should affect many output bytes. Such poor avalanche properties make the cipher vulnerable to differential attacks and may allow attackers to infer relationships between plaintext and ciphertext.
+
+- **Statistical Randomness:** Dieharder tests on the ChaC keystream show that most statistical tests are passed, indicating the output is close to random. However, a few tests (e.g., rgb_bitdist, dab_filltree2) are marked as WEAK, suggesting subtle non-randomness or correlations in the output. While not catastrophic, these results reinforce concerns about the cipher's robustness.
+
+- **Key Schedule and Output Expansion:** The simplified key schedule and reuse of state for multiple keystream outputs may introduce correlations and reduce security. This design choice, while efficient, further weakens the cipher's resistance to advanced cryptanalysis.
 
 ### Literature Comparison
 
-Academic studies of ChaCha (Bernstein, 2008; RFC 8439) show that its security relies on a large state and strong diffusion. Reducing the state or reusing it for multiple outputs is generally discouraged, as it can introduce weaknesses. Similar stream ciphers (e.g., Salsa20) also emphasize the importance of state size and round count for security.
+Academic studies of ChaCha (Bernstein, RFC 8439) emphasize the importance of strong diffusion and avalanche properties for security. Reducing the state size or reusing it for multiple outputs is generally discouraged, as it can introduce weaknesses and make the cipher more susceptible to attacks. Similar stream ciphers (e.g., Salsa20) also highlight the need for a large state and sufficient rounds to ensure security.
+
+### Recommendations
+
+- The current ChaC design is not recommended for security-critical applications due to its poor diffusion and some statistical weaknesses. If used, it should be limited to scenarios where performance is more important than security, and where the risk of cryptanalysis is low.
+- For cryptographic use, consider reverting to the original ChaCha design or increasing the state size and round count to improve diffusion and avalanche properties.
+- Further analysis and testing (including more advanced cryptanalytic techniques) are advised before deploying ChaC in any real-world system.
 
 ## 6. Role of AI Tools
 
-AI tools (e.g., Copilot, ChatGPT) were used to:
+AI tools (mainly Copilot and ChatGPT) were used to:
 
-- Summarize cryptanalytic methods.
-- Suggested experiment setups and analysis techniques.
+- Summarize cryptanalytic methods and relevant literature.
+- Suggest experiment setups and analysis techniques.
+- Generate code for differential and statistical testing, and help interpret results.
 
-### Reflection
-
-AI accelerated the research and coding process, provided broad ideas, and helped clarify concepts. However, human expertise was essential for critical analysis and interpretation of results. AI tools were especially useful for quickly reviewing the differences between ChaCha and ChaC, generating experimental code, and summarizing academic literature.
+AI accelerated the research and coding process, provided broad ideas, and helped clarify concepts. However, human expertise was essential for critical analysis and interpretation of results. AI tools were especially useful for quickly reviewing the differences between ChaCha and ChaC, generating experimental code, and summarizing academic literature. The final analysis and recommendations were made based on experimental evidence and cryptographic principles.
 
 ## 7. Conclusion
 
-The modified ChaCha cipher (ChaC) was evaluated using differential and statistical methods. While some strengths remain, the modifications introduce potential vulnerabilities, especially regarding diffusion and output correlations. AI tools were valuable for support but did not replace my own analysis. Further cryptanalysis and caution are recommended before deploying ChaC in security-critical applications.
+The modified ChaCha cipher (ChaC) was evaluated using differential cryptanalysis and statistical randomness tests. While the cipher retains some strengths from the original design, the experimental results reveal significant weaknesses in diffusion and avalanche properties, as well as subtle statistical anomalies. These findings indicate that ChaC is not suitable for security-critical applications without further improvements. AI tools were valuable for supporting the analysis, but final conclusions were based on experimental data and cryptographic best practices. Further cryptanalysis and caution are strongly recommended before deploying ChaC in any real-world cryptographic system.
