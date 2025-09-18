@@ -24,7 +24,7 @@ import (
 // 'e','t','a','o','i','n','s','h','r','d','l','c','u','m','w','f','g','y','p','b','v','k','j','x','q','z'
 // perhaps it could be a fun exercise to expand this app into something more functional for a CLI tool as a personal project
 
-var standardFreq = []rune{'e', 't', 'a', 's', 'i', 'r', 'n', 'o', 'c', 'h', 'l', 'd', 'u', 'f', 'p', 'y', 'm', 'w', 'b', 'g', 'k', 'v', 'j', 'x', 'q', 'z'}
+var standardFreq = []rune{'e', 't', 'a', 's', 'i', 'r', 'n', 'o', 'c', 'h', 'l', 'd', 'u', 'f', 'p', 'y', 'm', 'w', 'b', 'g', 'k', 'v', 'z', 'x', 'q', 'j'}
 
 /* conversions made for this ciphertext
 * etr.     		 -> etc.       	   | swap r/c

@@ -9,15 +9,15 @@ Code for this assignment can be found [on my github.](https://github.com/xvr6/cs
 
 ### a. Provide the relative frequency of all letters A...Z in the ciphertext
 
-1. t (217)
-2. z (150)
-3. q (147)
-4. l (130)
-5. o (124)
-6. k (101)
-7. f (92)
-8. g (80)
-9. e (77)
+01. t (217)
+02. z (150)
+03. q (147)
+04. l (130)
+05. o (124)
+06. k (101)
+07. f (92)
+08. g (80)
+09. e (77)
 10. i (77)
 11. s (72)
 12. r (55)
@@ -90,43 +90,45 @@ of simple letter tricks.
 
 ### c. Find the Plaintext/Ciphertext letter pairs, alphabetized by plaintext
 
-1. z -> t
-2. q -> a
-3. o -> i
-4. k -> r
-5. g -> o
-6. e -> c
-7. i -> h
-8. s -> l
-9. y -> f
-10. v -> w
+00. Cipher -> Plain
+01. q -> a
+02. w -> b
+03. e -> c
+04. r -> d
+05. t -> e
+06. y -> f
+07. u -> g
+08. i -> h
+09. o -> i
+10. -- no mapping for j --
 11. a -> k
-12. c -> v
-13. m -> j
-14. b -> x
-15. x -> u
-16. l -> s
-17. r -> d
-18. h -> p
-19. n -> y
-20. w -> b
-21. t -> e
-22. f -> n
-23. d -> m
-24. u -> g
-25. j -> q
+12. s -> l
+13. d -> m
+14. f -> n
+15. g -> o
+16. h -> p
+17. j -> q
+18. k -> r
+19. l -> s
+20. z -> t
+21. x -> u
+22. c -> v
+23. v -> w
+24. b -> x
+25. n -> y
+26. m -> z
 
 ### d. Provide letter frequency for the given plaintext
 
-1. e (217)
-2. t (150)
-3. a (147)
-4. s (130)
-5. i (124)
-6. r (101)
-7. n (92)
-8. o (80)
-9. c (77)
+01. e (217)
+02. t (150)
+03. a (147)
+04. s (130)
+05. i (124)
+06. r (101)
+07. n (92)
+08. o (80)
+09. c (77)
 10. h (77)
 11. l (72)
 12. d (55)
@@ -140,7 +142,7 @@ of simple letter tricks.
 20. g (30)
 21. k (20)
 22. v (12)
-23. j (5)
+23. z (5)
 24. x (4)
 25. q (1)
 
@@ -159,3 +161,24 @@ AI Response:
     1. Collect runes and their counts into a slice.
     2. Sort by count (descending), and for ties, sort by rune value (ascending or descending as you prefer).
 ```
+
+## Bonus Question: LFSR Gate Positions
+
+Consider an LFSR with $m$ registers. If you have $2m$ consecutive output bits, you can determine the gate (feedback tap) positions as follows:
+
+The LFSR generates bits according to a linear recurrence:
+$$
+s_{i+m} = c_1 s_{i+m-1} + c_2 s_{i+m-2} + \cdots + c_m s_i \pmod{2}
+$$
+
+Given $2m$ output bits $s_0, s_1, \ldots, s_{2m-1}$, you can set up $m$ equations in $m$ unknowns ($c_1, \ldots, c_m$):
+$$
+\begin{align*}
+s_{m} &= c_1 s_{m-1} + c_2 s_{m-2} + \cdots + c_m s_0 \\
+s_{m+1} &= c_1 s_{m} + c_2 s_{m-1} + \cdots + c_m s_1 \\
+&\vdots \\
+s_{2m-1} &= c_1 s_{2m-2} + c_2 s_{2m-3} + \cdots + c_m s_{m-1}
+\end{align*}
+$$
+
+This system can be solved (mod 2) to find the feedback coefficients, i.e., the gate positions. Thus, $2m$ consecutive output bits are sufficient to uniquely determine the gate positions of an $m$-stage LFSR.
