@@ -9,7 +9,6 @@ type SegKey struct {
 	count uint8
 }
 
-
 func NewSegKey(inputKey []uint8) *SegKey {
 	c0 := diffusion(inputKey, &pc1[0])
 	d0 := diffusion(inputKey, &pc1[1])

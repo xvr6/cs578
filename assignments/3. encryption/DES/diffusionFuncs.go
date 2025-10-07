@@ -76,62 +76,19 @@ var p = [][]uint8{
 }
 
 /*
-TODO: write documentation
-*/
+ */
 func diffusion(in []uint8, sMap *[][]uint8) []uint8 {
+	var out []uint8
 
-	//calculated size needed for the output.
-	var size int = (len(*sMap) * len((*sMap)[0]))
-	var out []uint8 = make([]uint8, size)
-
-	if size >= len(in) { //map in values to smap position
-		if DEBUG {
-			println("\nin -> smap")
-		}
-		//this shuffles the bits and either increases or keeps size same.
-
-		for i, b := range *sMap {
-			//j is ctr, c is value in second dimension array
-			for j, c := range b {
-				//current index in array
-				curr := i + j
-				pos := c - 1
-				toInsert := in[curr]
-				if toInsert == 0 {
-					continue
-				}
-				if DEBUG {
-					fmt.Printf("%v <- pos: %2v; insert: %v\n", out, pos, toInsert)
-				}
-
-				out[pos] = in[curr]
+	for _, r := range *sMap {
+		for _, c := range r {
+			toInsert := in[c-1]
+			if DEBUG {
+				fmt.Printf("%v <- insert: %v\n", out, toInsert)
 			}
+			out = append(out, toInsert)
 		}
 
-	} else { // take values from 'in' and turn them into a string based upon the positions stated .
-		// ex if sMap is {2,1,3,4} then we take values from position 2 of 'in' and assign it to the new position 0 in output.
-		// this can also shrink input
-		if DEBUG {
-			println("\nin <- smap")
-
-		}
-
-		pos := 0
-		for _, r := range *sMap {
-			for _, c := range r {
-				toInsert := in[c-1]
-				if toInsert == 0 {
-					pos++
-					continue
-				}
-				if DEBUG {
-					fmt.Printf("%v <- pos: %2v; insert %v from in[%2v]\n", out, pos, toInsert, c)
-				}
-
-				out[pos] = toInsert
-				pos++
-			}
-		}
 	}
 	return out
 
