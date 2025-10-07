@@ -10,8 +10,9 @@ type SegKey struct {
 }
 
 func NewSegKey(inputKey []uint8) *SegKey {
-	c0 := diffusion(inputKey, pc1[0])
-	d0 := diffusion(inputKey, pc1[1])
+	println("creating segkey")
+	c0 := diffusion(inputKey, &pc1[0])
+	d0 := diffusion(inputKey, &pc1[1])
 
 	return &SegKey{c0, d0, 0}
 }
@@ -27,7 +28,7 @@ func (k SegKey) getNextKey() []uint8 {
 	fk := k.getFullKey()
 	k.count++
 
-	return diffusion(fk, pc2)
+	return diffusion(fk, &pc2)
 
 }
 

@@ -1,7 +1,9 @@
 package main
 
+import "fmt"
+
 // copilot was used here to turn these from strings into arrays.
-var eBlock = [8][6]uint8{
+var eBlock = [][]uint8{
 	{32, 1, 2, 3, 4, 5},
 	{4, 5, 6, 7, 8, 9},
 	{8, 9, 10, 11, 12, 13},
@@ -40,7 +42,7 @@ var pc2 = [][]uint8{
 	{46, 42, 50, 36, 29, 32},
 }
 
-var ip = [8][8]uint8{
+var ip = [][]uint8{
 	{58, 50, 42, 34, 26, 18, 10, 2},
 	{60, 52, 44, 36, 28, 20, 12, 4},
 	{62, 54, 46, 38, 30, 22, 14, 6},
@@ -51,7 +53,7 @@ var ip = [8][8]uint8{
 	{63, 55, 47, 39, 31, 23, 15, 7},
 }
 
-var fp = [8][8]uint8{
+var fp = [][]uint8{
 	{40, 8, 48, 16, 56, 24, 64, 32},
 	{39, 7, 47, 15, 55, 23, 63, 31},
 	{38, 6, 46, 14, 54, 22, 62, 30},
@@ -62,21 +64,65 @@ var fp = [8][8]uint8{
 	{33, 1, 41, 9, 49, 17, 57, 25},
 }
 
-func diffusion(in []uint8, sMap [][]uint8) []uint8 {
+var p = [][]uint8{
+	{16, 7, 20, 21},
+	{29, 12, 28, 17},
+	{1, 15, 23, 26},
+	{5, 18, 31, 10},
+	{2, 8, 24, 14},
+	{32, 27, 3, 9},
+	{19, 13, 30, 6},
+	{22, 11, 4, 25},
+}
+
+/*
+TODO: write documentation
+*/
+func diffusion(in []uint8, sMap *[][]uint8) []uint8 {
 
 	//calculated size needed for the output.
-	var size int = len(sMap) * len(sMap[0])
+	var size int = (len(*sMap) * len((*sMap)[0]))
+	var out []uint8 = make([]uint8, size)
 
-	var out []uint8 = make([]uint8, 0, size)
+	if size >= len(in) { //map in values to smap position
+		println("\nin -> smap")
+		//this shuffles the bits and either increases or keeps size same.
 
-	for i, b := range sMap {
-		//j is ctr, c is value in second dimension array
-		for j, c := range b {
-			//current index in array
-			curr := i + j
-			out[c-1] = in[curr]
+		for i, b := range *sMap {
+			//j is ctr, c is value in second dimension array
+			for j, c := range b {
+				//current index in array
+				curr := i + j
+				pos := c - 1
+				toInsert := in[curr]
+				if toInsert == 0 {
+					continue
+				}
+				fmt.Printf("%v <- pos: %2v; insert: %v\n", out, pos, toInsert)
+				out[pos] = in[curr]
+			}
+		}
+
+	} else { // take values from 'in' and turn them into a string based upon the positions stated .
+		// ex if sMap is {2,1,3,4} then we take values from position 2 of 'in' and assign it to the new position 0 in output.
+		// this can also shrink input
+		println("\nin <- smap")
+
+		pos := 0
+		for _, r := range *sMap {
+			for _, c := range r {
+				toInsert := in[c-1]
+				if toInsert == 0 {
+					pos++
+					continue
+				}
+				fmt.Printf("%v <- pos: %2v; insert %v from in[%2v]\n", out, pos, toInsert, c)
+
+				out[pos] = toInsert
+				pos++
+			}
 		}
 	}
-
 	return out
+
 }
