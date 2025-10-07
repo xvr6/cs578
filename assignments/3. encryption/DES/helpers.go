@@ -11,8 +11,9 @@ func convToBinary(in uint8) []uint8 {
 	var out []uint8
 	conv := strconv.FormatInt(int64(in), 2)
 	strs := strings.Split(conv, "")
-
-	fmt.Printf("%v", strs)
+	if DEBUG {
+		fmt.Printf("%v", strs)
+	}
 	for _, v := range strs {
 		i, _ := strconv.Atoi(v)
 		out = append(out, uint8(i))

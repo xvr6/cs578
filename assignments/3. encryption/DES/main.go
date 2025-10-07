@@ -6,6 +6,7 @@ import (
 
 // consts needed for the logic
 var (
+	DEBUG           = false
 	rounds    uint8 = 16
 	blockSize uint8 = 64
 	// bits 8,16,24,32,40,48,56,64 are the parity bits which were removed for this assignment and replaced as 0s
@@ -27,7 +28,10 @@ func round(inL []uint8, inR []uint8, ctr uint8) []uint8 {
 	outL := inR
 
 	if ctr == rounds-1 {
-		fmt.Println("done!")
+		if DEBUG {
+			fmt.Println("done!")
+
+		}
 		return append(outL, outR...)
 	}
 	ctr++
@@ -38,7 +42,10 @@ func round(inL []uint8, inR []uint8, ctr uint8) []uint8 {
 // function f as described by the paper
 func f(inL []uint8, inR []uint8) []uint8 {
 	// ----- BEGIN function f -----
-	fmt.Printf("\nlen(l): %v\nlen(r): %v", len(inL), len(inR))
+	if DEBUG {
+		fmt.Printf("\nlen(l): %v\nlen(r): %v", len(inL), len(inR))
+	}
+
 	//step 1 - right side into 48 bits
 	Ri := diffusion(inL, &eBlock)
 	//step 2 - get current key, then xor with ri
@@ -53,17 +60,23 @@ func f(inL []uint8, inR []uint8) []uint8 {
 		row := append(si[:1], si[5:]...)
 		col := si[1:5]
 		x, y := convToI(row), convToI(col)
-		fmt.Printf("\n%v:\nsi: %v\nRow: %v; Col: %v\n[%v,%2v]\n", i, si, row, col, x, y)
+		if DEBUG {
+			fmt.Printf("\n%v:\nsi: %v\nRow: %v; Col: %v\n[%v,%2v]\n", i, si, row, col, x, y)
+		}
 
 		siFinal := convToBinary(lookUp(x, y, &s[i]))
 		step3 = append(step3, siFinal...)
 	}
-	fmt.Printf("\n%v", step3)
+	if DEBUG {
+		fmt.Printf("\n%v", step3)
+
+	}
 	//step 4 - bitwise permutation p
 
 	step4 := diffusion(step3, &p)
-
-	fmt.Printf("step4: %v\n", step4)
+	if DEBUG {
+		fmt.Printf("step4: %v\n", step4)
+	}
 
 	// ----- END function f -----
 
@@ -71,16 +84,16 @@ func f(inL []uint8, inR []uint8) []uint8 {
 }
 
 func main() {
-	fmt.Printf("\n1) Plaintext: %v\n", plaintext1)
+	fmt.Printf("\nPlaintext: %v\n", plaintext1)
 
 	var initPermutation []uint8 = diffusion(plaintext1, &ip)
 
-	fmt.Printf("\n2) ip: %v", initPermutation)
+	// fmt.Printf("\n2) ip: %v\n", initPermutation)
 
 	preout := round(initPermutation[0:32], initPermutation[32:64], 0)
-	fmt.Println(preout)
+	// fmt.Printf("\nPreout: %v\n", preout)
 
 	var finalPermutation []uint8 = diffusion(preout, &fp)
 
-	fmt.Printf("\n5) fp: %v", finalPermutation)
+	fmt.Printf("\nfinal: %v", finalPermutation)
 }
