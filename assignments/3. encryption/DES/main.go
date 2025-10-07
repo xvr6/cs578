@@ -6,16 +6,25 @@ import (
 
 // consts needed for the logic
 var (
-	DEBUG           = false
-	rounds    uint8 = 16
-	blockSize uint8 = 64
+	DEBUG        = false
+	rounds uint8 = 16
 	// bits 8,16,24,32,40,48,56,64 are the parity bits which were removed for this assignment and replaced as 0s
 	key        = []uint8{0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0}
 	sKey       = NewSegKey(key) // convert into SegKey struct
 	plaintext1 = []uint8{1, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0}
-	plaintext2 = [64]uint8{}
-	plaintext3 = [64]uint8{}
+	plaintext2 = []uint8{1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0}
+	plaintext3 = []uint8{0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0}
 )
+
+func DESEncrypt(pt []uint8) []uint8 {
+	var initPermutation []uint8 = diffusion(pt, &ip)
+
+	//recursive function which actually encrypts the code
+	preout := round(initPermutation[0:32], initPermutation[32:64], 0)
+
+	var finalPermutation []uint8 = diffusion(preout, &fp)
+	return finalPermutation
+}
 
 // function which is recursively called to print out a result.
 func round(inL []uint8, inR []uint8, ctr uint8) []uint8 {
@@ -23,7 +32,6 @@ func round(inL []uint8, inR []uint8, ctr uint8) []uint8 {
 	fout := f(inL, inR)
 
 	// xor function f output with L0
-
 	outR := XOR(inL, fout)
 	outL := inR
 
@@ -39,7 +47,7 @@ func round(inL []uint8, inR []uint8, ctr uint8) []uint8 {
 
 }
 
-// function f as described by the paper
+// function f as described by the paper this assignment is a clone of.
 func f(inL []uint8, inR []uint8) []uint8 {
 	// ----- BEGIN function f -----
 	if DEBUG {
@@ -84,16 +92,12 @@ func f(inL []uint8, inR []uint8) []uint8 {
 }
 
 func main() {
-	fmt.Printf("\nPlaintext: %v\n", plaintext1)
+	ct1 := DESEncrypt(plaintext1)
+	ct2 := DESEncrypt(plaintext2)
+	ct3 := DESEncrypt(plaintext3)
 
-	var initPermutation []uint8 = diffusion(plaintext1, &ip)
+	fmt.Printf("\npt1: %v\nct1: %v\n", plaintext1, ct1)
+	fmt.Printf("\npt2: %v\nct2: %v\n", plaintext2, ct2)
+	fmt.Printf("\npt3: %v\nct3: %v\n", plaintext3, ct3)
 
-	// fmt.Printf("\n2) ip: %v\n", initPermutation)
-
-	preout := round(initPermutation[0:32], initPermutation[32:64], 0)
-	// fmt.Printf("\nPreout: %v\n", preout)
-
-	var finalPermutation []uint8 = diffusion(preout, &fp)
-
-	fmt.Printf("\nfinal: %v", finalPermutation)
 }
