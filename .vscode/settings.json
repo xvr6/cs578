@@ -6,6 +6,7 @@
         "invertibility",
         "keyspace",
         "plaintexts",
+        "sbox",
         "subkey"
     ]
 }
