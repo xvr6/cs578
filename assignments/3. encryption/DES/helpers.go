@@ -21,7 +21,7 @@ func convToBinary(in uint8) []uint8 {
 	if DEBUG {
 		fmt.Printf("\nout: %v", out)
 	}
-	
+
 	//pad with leading 0s if necessary
 	if len(out) != 4 {
 		for range 4 - len(out) {

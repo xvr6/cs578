@@ -33,12 +33,12 @@ func round(inL []uint8, inR []uint8, ctr uint8) []uint8 {
 
 	// xor function f output with L0
 	outR := XOR(inL, fout)
+	//inverted
 	outL := inR
 
-	if ctr == rounds-1 {
+	if ctr == rounds {
 		if DEBUG {
 			fmt.Println("done!")
-
 		}
 		return append(outL, outR...)
 	}
@@ -49,22 +49,23 @@ func round(inL []uint8, inR []uint8, ctr uint8) []uint8 {
 
 // function f as described by the paper this assignment is a clone of.
 func f(inL []uint8, inR []uint8) []uint8 {
-	// ----- BEGIN function f -----
 	if DEBUG {
 		fmt.Printf("\nlen(l): %v\nlen(r): %v", len(inL), len(inR))
 	}
 
-	//step 1 - right side into 48 bits
+	//step 1 - right side of text from 32->48 bits
 	Ri := diffusion(inL, &eBlock)
+
 	//step 2 - get current key, then xor with ri
 	Ki := sKey.getNextKey()
 	o := XOR(Ri, Ki)
+
 	//step 3 - S-box substitution; each 6bit sub-array -> 4bit
 	var step3 []uint8
 
 	for i := range 8 {
 		si := o[i*6 : (i+1)*6]
-		//check notes 2.3: 3: S-box substitution for more detailed explanation about what is happening here.
+		//check notes "2.3; 3: S-box substitution" - for more detailed explanation about what is happening here.
 		row := append(si[:1], si[5:]...)
 		col := si[1:5]
 		x, y := convToI(row), convToI(col)
@@ -77,16 +78,13 @@ func f(inL []uint8, inR []uint8) []uint8 {
 	}
 	if DEBUG {
 		fmt.Printf("\n%v", step3)
-
 	}
-	//step 4 - bitwise permutation p
 
+	//step 4 - bitwise permutation p
 	step4 := diffusion(step3, &p)
 	if DEBUG {
 		fmt.Printf("step4: %v\n", step4)
 	}
-
-	// ----- END function f -----
 
 	return step4
 }
