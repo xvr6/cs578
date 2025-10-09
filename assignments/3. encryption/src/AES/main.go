@@ -18,6 +18,12 @@ var (
 		1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 1, 1, 1, 0, 1, 0, 0, 1, 1, 1, 0, 1, 0,
 		1, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1, 1, 1, 1,
 	}
+	plaintext2 = [128]uint8{
+		1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 1, 1, 0, 0, 1, 0,
+		0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 0, 1, 1,
+		1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 1, 1, 1, 0, 1, 0, 0, 1, 1, 1, 0, 1, 0,
+		1, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1, 1, 1, 1,
+	}
 	// AES S-box (16x16)
 	// generated with copilot
 	sbox = [][]uint8{
@@ -47,6 +53,8 @@ func addRoundKey(SM *StateMatrix, KM *KeyMatrix) {
 		val := SM.list[row][col].value ^ KM.list[row][col].value
 		SM.updateState(row, col, val)
 	}
+	//rotate key
+	KM.nextKey()
 
 }
 
@@ -103,7 +111,6 @@ func round(SM *StateMatrix, KM *KeyMatrix, count int) {
 	for range count {
 		//step one addroundkey xor
 		addRoundKey(SM, KM)
-		KM.nextKey()
 		if DEBUG {
 			fmt.Println(SM.printable())
 		}
@@ -129,13 +136,28 @@ func round(SM *StateMatrix, KM *KeyMatrix, count int) {
 
 	}
 }
+
+func encrypt(SM *StateMatrix, KM *KeyMatrix) {
+	round(SM, KM, 10)
+	//final rotation
+	addRoundKey(SM, KM)
+}
+
 func main() {
 
 	SM := NewStateMatrix(plaintext1)
 	KM := NewKeyMatrix(key)
 	fmt.Println(SM.printable())
+	encrypt(SM, KM)
 
-	round(SM, KM, 10)
 	fmt.Println(SM.printable())
+
+	SM2 := NewStateMatrix(plaintext2)
+	KM2 := NewKeyMatrix(key)
+	fmt.Println(SM2.printable())
+
+	encrypt(SM2, KM2)
+
+	fmt.Println(SM2.printable())
 
 }

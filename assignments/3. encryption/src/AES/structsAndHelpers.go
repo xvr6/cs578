@@ -114,21 +114,21 @@ func Ltoi(in [8]uint8) uint8 {
 // prints out current state matrix in a table
 func (SM StateMatrix) printable() string {
 	spacer := ("-------------\n")
-	var mainb strings.Builder
+	var mainB strings.Builder
 
 	for r := range 4 {
-		var innerb strings.Builder
-		innerb.WriteString(fmt.Sprintf("%s|", spacer))
+		var innerB strings.Builder
+		innerB.WriteString(fmt.Sprintf("%s|", spacer))
 		for c := range 4 {
-			innerb.WriteString(fmt.Sprintf("%02v|", SM.list[r][c].str))
+			innerB.WriteString(fmt.Sprintf("%02v|", SM.list[r][c].str))
 		}
-		innerb.WriteString("\n")
+		innerB.WriteString("\n")
 
-		mainb.WriteString(innerb.String())
+		mainB.WriteString(innerB.String())
 	}
-	mainb.WriteString(spacer)
+	mainB.WriteString(spacer)
 
-	return mainb.String()
+	return mainB.String()
 }
 
 func lookup(val string, sbox *[][]uint8) uint8 {
