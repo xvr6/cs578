@@ -1,5 +1,7 @@
 # Project 3
 
+> code can be found at: https://github.com/xvr6/cs578/tree/main/assignments/3.%20encryption
+
 ## DES
 
 ```plaintext
