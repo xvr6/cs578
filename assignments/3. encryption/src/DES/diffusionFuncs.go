@@ -4,7 +4,7 @@ import "fmt"
 
 // copilot was used here to turn these from strings into arrays.
 
-//expansion block needed for f step1
+// expansion block needed for f step1
 var eBlock = [][]uint8{
 	{32, 1, 2, 3, 4, 5},
 	{4, 5, 6, 7, 8, 9},
