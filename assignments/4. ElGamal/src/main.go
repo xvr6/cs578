@@ -104,12 +104,6 @@ func genKey(q *big.Int) *big.Int {
 }
 
 func main() {
-
-	run1 := modExp(big.NewInt(235973), big.NewInt(456872884723247), big.NewInt(583884))
-	run2 := modExp(big.NewInt(984327455683), big.NewInt(1253489582), big.NewInt(994348472542))
-
-	fmt.Printf("modexp1: %v\n modexp2: %v", run1, run2)
-	return
 	// Check for command-line arguments: go run main.go x k m
 	if len(os.Args) == 4 {
 		xInt, _ := strconv.ParseInt(os.Args[1], 10, 64)

@@ -1,5 +1,7 @@
 # ElGamals
 
+> AI Usage statement: No AI was used in the creation of this program.
+
 1. ElGamal Encryption - Encrypt the following messages using ElGamal encryption (Z∗409 and g = 19):
 
 > Perform both encryption and decryption. Show every intermediate step of the ElGamal Scheme.
