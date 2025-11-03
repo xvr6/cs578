@@ -55,9 +55,29 @@ func decrypt(enMsg []*big.Int, p, key, q *big.Int) string {
 	return string(drMsg)
 }
 
-// modExp computes (base^exp) % mod efficiently using math/big.
+// modExp computes (base^exp) % mod.
+// Replaced with my own implementation of square-and-multiply.
 func modExp(base, exp, mod *big.Int) *big.Int {
-	result := new(big.Int).Exp(base, exp, mod)
+	// result := new(big.Int).Exp(base, exp, mod)
+
+	e := new(big.Int).Set(exp)
+	b := new(big.Int).Mod(new(big.Int).Set(base), mod)
+	result := big.NewInt(1)
+
+	zero := big.NewInt(0)
+
+	for e.Cmp(zero) > 0 {
+		// if least significant bit is 1, multiply result by current base
+		if e.Bit(0) == 1 {
+			result.Mul(result, b)
+			result.Mod(result, mod)
+		}
+		// square base: b = b*b mod mod
+		b.Mul(b, b)
+		b.Mod(b, mod)
+		// shift exponent right by 1
+		e.Rsh(e, 1)
+	}
 	return result
 }
 
@@ -84,6 +104,12 @@ func genKey(q *big.Int) *big.Int {
 }
 
 func main() {
+
+	run1 := modExp(big.NewInt(235973), big.NewInt(456872884723247), big.NewInt(583884))
+	run2 := modExp(big.NewInt(984327455683), big.NewInt(1253489582), big.NewInt(994348472542))
+
+	fmt.Printf("modexp1: %v\n modexp2: %v", run1, run2)
+	return
 	// Check for command-line arguments: go run main.go x k m
 	if len(os.Args) == 4 {
 		xInt, _ := strconv.ParseInt(os.Args[1], 10, 64)
